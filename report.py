@@ -35,7 +35,7 @@ class Report:
         return self
 
     def update_loss(loss, batch_size, train_type):
-        self.loss_count.update({train_type: self.change_data_type(loss, "f") * batch_size})
+        self.loss_count.update({train_type: self.change_data_type(loss, "f")})
         return self
 
     def update_data_iter(batch_size, train_type):
@@ -65,7 +65,7 @@ class Report:
 
     def change_data_type(self, data, required_data_type):
         if required_data_type == "np" and isinstance(data, torch.Tensor):
-            return torch.numpy(data)
+            return torch.numpy(data).clone().detach().cpu()
         if required_data_type == "f":
             return data[0] if isinstance(data, np.ndarray) else data.item()
 
