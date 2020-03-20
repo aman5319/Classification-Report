@@ -16,11 +16,11 @@ class Report:
         assert train_type in self.train_type, f"Train type {train_type} not in the list {self.train_type}"
         self.update_data_iter(batch_size, train_type)
         self.update_loss(loss, batch_size, train_type)
-        self.update_actual_prediction(actual, prediction, batch_size, train_type)
+        self.update_actual_prediction(actual, prediction, train_type)
         return self
 
-    def update_actual_prediction(actual, prediction, train_type):
-        if actual is None and prediction is None :
+    def update_actual_prediction(self, actual, prediction, train_type):
+        if actual is None and prediction is None:
             return self
         actual = self.change_data_type(actual, "np")
         pred = self.change_data_type(prediction, "np")
@@ -34,11 +34,11 @@ class Report:
             self.act_pred_dict[train_type]["pred"] = np.concatenate((self.act_pred_dict[train_type]["pred"], pred))
         return self
 
-    def update_loss(loss, batch_size, train_type):
+    def update_loss(self, loss, batch_size, train_type):
         self.loss_count.update({train_type: self.change_data_type(loss, "f")})
         return self
 
-    def update_data_iter(batch_size, train_type):
+    def update_data_iter(self, batch_size, train_type):
         self.data_count.update({train_type: batch_size})
         self.iter_count.update({train_type: 1})
         return self
@@ -55,19 +55,20 @@ class Report:
         return self
 
     def init_data_storage(self,):
-        self.loss_count = Counter(dict(zip(self.train_type,[0]* len(self.train_type))))
+        self.loss_count = Counter(dict(zip(self.train_type, [0] * len(self.train_type))))
         self.data_count = copy.deepcopy(self.loss_count)
         self.iter_count = copy.deepcopy(self.loss_count)
-        self.act_pred_dict = dict(zip(self.train_type,[dict()] * len(self.train_type))) 
+        self.act_pred_dict = dict(zip(self.train_type, [copy.deepcopy(dict()) for i in self.train_type]))
 
     def write_to_tensorboard():
         pass
 
     def change_data_type(self, data, required_data_type):
         if required_data_type == "np" and isinstance(data, torch.Tensor):
-            return torch.numpy(data).clone().detach().cpu()
+            return data.clone().detach().cpu().numpy()
         if required_data_type == "f":
             return data[0] if isinstance(data, np.ndarray) else data.item()
+        return data
 
     def close(self):
         self.writer.close()
