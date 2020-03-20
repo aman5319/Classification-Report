@@ -43,11 +43,6 @@ class Report:
         self.iter_count.update({train_type: 1})
         return self
 
-    def add_loss(self, *loss_args):
-        loss_tag_dict = {key: value for key, value in zip(self.train_type, loss_args)}
-        self.writer.add_scalars(self.loss_main_tag, loss_tag_dict, self.counter)
-        return self
-
     def plot_an_epoch(self,):
         self.counter += 1
         self.write_to_tensorboard()
@@ -60,9 +55,6 @@ class Report:
         self.iter_count = copy.deepcopy(self.loss_count)
         self.act_pred_dict = dict(zip(self.train_type, [copy.deepcopy(dict()) for i in self.train_type]))
 
-    def write_to_tensorboard():
-        pass
-
     def change_data_type(self, data, required_data_type):
         if required_data_type == "np" and isinstance(data, torch.Tensor):
             return data.clone().detach().cpu().numpy()
@@ -72,3 +64,16 @@ class Report:
 
     def close(self):
         self.writer.close()
+
+    def write_to_tensorboard(self):
+        self.plot_loss()
+
+    def plot_loss(self,):
+        loss_main_tag = "Loss"
+        self.loss_count = {i: j / self.iter_count[i] for i, j in self.loss_count.items()}
+        self.writer.add_scalars(loss_main_tag, self.loss_count, self.counter)
+        return self
+
+    def plot_model(self, model, data):
+        self.writer.add_graph(model, data)
+        return self
