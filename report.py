@@ -126,3 +126,21 @@ class Report:
                     scaler_tag = {"train": output_train[key], "valid": output_valid[key]}
                     self.writer.add_scalars(key, scaler_tag, self.counter)
         return self
+
+    def plot_missclassification_count(self,):
+        if all(["train" in self.train_type, "valid" in self.train_type]):
+            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
+            valid_fp, valid_fn,= self.calculate_fp_fn(actual, pred)
+            actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
+            train_fp, train_fn,= self.calculate_fp_fn(actual, pred)
+            self.writer.add_scalars()
+
+    def calculate_fp_fn(self, actual, pred):
+        true_sum = np.bincount(actual,minlength = len(self.classes))
+        pred_sum = np.bincount(pred,minlength = len(self.classes))
+        tp_sum=np.bincount(actual[actual==pred],minlength = len(self.classses))
+        fp = (pred_sum-tp_sum)
+        fn = (true_sum-tp_sum)
+        return fp, fn
+
+
