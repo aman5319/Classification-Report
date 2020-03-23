@@ -3,16 +3,23 @@ from collections import Counter
 import numpy as np
 import torch
 import copy
+from utils import convert_prob_to_label
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 
 class Report:
-    def __init__(self, writer=None, train_type=None):
+    def __init__(self, writer=None, train_type=None, classes=None):
         self.writer = SummaryWriter() if writer is None else writer
-        self.counter = -1
+        self.counter = 0
         self.train_type = ["train", "valid", "test"] if train_type is None else train_type
-        self.init_data_storage()
+        self.classes = classes
+        self.clean_flag = True
 
     def write_a_batch(self, loss, batch_size, actual=None, prediction=None, train_type="train"):
+        if self.clean_flag:
+            self.init_data_storage()
         assert train_type in self.train_type, f"Train type {train_type} not in the list {self.train_type}"
         self.update_data_iter(batch_size, train_type)
         self.update_loss(loss, batch_size, train_type)
@@ -43,13 +50,15 @@ class Report:
         self.iter_count.update({train_type: 1})
         return self
 
-    def plot_an_epoch(self,):
+    def plot_an_epoch(self, detail=False):
+        self.clean_flag = True
         self.counter += 1
-        self.write_to_tensorboard()
-        self.init_data_storage()
+        if not detail:
+            self.write_to_tensorboard()
         return self
 
     def init_data_storage(self,):
+        self.clean_flag = False
         self.loss_count = Counter(dict(zip(self.train_type, [0] * len(self.train_type))))
         self.data_count = copy.deepcopy(self.loss_count)
         self.iter_count = copy.deepcopy(self.loss_count)
@@ -67,6 +76,7 @@ class Report:
 
     def write_to_tensorboard(self):
         self.plot_loss()
+        self.plot_confusion_matrix(self.counter)
 
     def plot_loss(self,):
         loss_main_tag = "Loss"
@@ -76,4 +86,28 @@ class Report:
 
     def plot_model(self, model, data):
         self.writer.add_graph(model, data)
+        return self
+
+    def plot_confusion_matrix(self, at_which_epoch, simple=True):
+        if self.counter % at_which_epoch == 0:
+            for tag, value in self.act_pred_dict.items():
+                actual, pred = value["actual"], convert_prob_to_label(value["pred"])
+                cm = confusion_matrix(actual, pred)
+                if not simple:
+                    cm_sum = np.sum(cm, axis=1, keepdims=True)
+                    cm_perc = cm / cm_sum * 100
+                    annot = np.empty_like(cm).astype(str)
+                    for i in range(cm.shape[0]):
+                        for j in range(cm.shape[1]):
+                            summ = cm_sum[i][0]
+                            c = cm[i, j]
+                            p = cm_perc[i, j]
+                            annot[i, j] = "0" if c == 0 else f"{c}/{summ}\n{p:.1f}%"
+                fig = plt.figure(figsize = (10, 10) if simple else (15,10))
+                ax = sns.heatmap(cm, annot=True if simple else annot,
+                                 fmt="d" if simple else "",
+                                 linewidth=.5, cmap="YlGnBu", linecolor="Black",
+                                 figure=fig,
+                                 xticklabels=self.classes, yticklabels=self.classes)
+                self.writer.add_figure(f"Confusion Matrix/{tag}", fig, global_step=self.counter)
         return self
