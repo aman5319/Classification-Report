@@ -5,7 +5,7 @@ import torch
 import copy
 from utils import convert_prob_to_label
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, matthews_corrcoef
 import matplotlib.pyplot as plt
 
 
@@ -14,7 +14,7 @@ class Report:
         self.writer = SummaryWriter() if writer is None else writer
         self.counter = 0
         self.train_type = ["train", "valid"]
-        self.classes = [f"c{i}-{j}" for i ,j in enumerate(classes)]
+        self.classes = [f"c{i}-{j}" for i, j in enumerate(classes)]
         self.clean_flag = True
 
     def write_a_batch(self, loss, batch_size, actual, prediction, train_type="train"):
@@ -74,7 +74,10 @@ class Report:
 
     def write_to_tensorboard(self):
         self.plot_loss()
-        self.plot_confusion_matrix(self.counter)
+        self.plot_confusion_matrix(5)
+        self.plot_precision_recall()
+        self.plot_missclassification_count(5)
+        self.plot_mcc()
 
     def plot_loss(self,):
         loss_main_tag = "Loss"
@@ -107,8 +110,8 @@ class Report:
                                  linewidth=.5, cmap="YlGnBu", linecolor="Black",
                                  figure=fig,
                                  xticklabels=self.classes, yticklabels=self.classes)
-                ax.set_yticklabels(ax.get_yticklabels(), rotation = -45, fontsize = 10)
-                ax.set_xticklabels(ax.get_xticklabels(), rotation = -45, fontsize = 10)
+                ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=10)
+                ax.set_xticklabels(ax.get_xticklabels(), rotation=-45, fontsize=10)
                 self.writer.add_figure(f"Confusion Matrix/{tag}", fig, global_step=self.counter)
         return self
 
@@ -167,3 +170,13 @@ class Report:
         fp = (pred_sum - tp_sum)
         fn = (true_sum - tp_sum)
         return fp, fn
+
+    def plot_mcc(self,):
+        if all(["train" in self.train_type, "valid" in self.train_type]):
+            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
+            output_valid = matthews_corrcoef(actual, pred)
+            actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
+            output_train = matthews_corrcoef(actual, pred)
+            scalar_tag = {"train": output_train, "valid": output_valid}
+            self.writer.add_scalars("MCC", scalar_tag, self.counter)
+        return self
