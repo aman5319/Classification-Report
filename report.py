@@ -74,7 +74,7 @@ class Report:
 
     def write_to_tensorboard(self):
         self.plot_loss()
-        self.plot_confusion_matrix(5)
+        self.plot_confusion_matrix(5,simple=False)
         self.plot_precision_recall()
         self.plot_missclassification_count(5)
         self.plot_mcc()
