@@ -14,7 +14,7 @@ class Report:
         self.writer = SummaryWriter() if writer is None else writer
         self.counter = 0
         self.train_type = ["train", "valid"]
-        self.classes = classes
+        self.classes = [f"c{i}-{j}" for i ,j in enumerate(classes)]
         self.clean_flag = True
 
     def write_a_batch(self, loss, batch_size, actual, prediction, train_type="train"):
@@ -102,20 +102,22 @@ class Report:
                             p = cm_perc[i, j]
                             annot[i, j] = "0" if c == 0 else f"{c}/{summ}\n{p:.1f}%"
                 fig = plt.figure(figsize=(10, 10) if simple else (15, 10))
-                sns.heatmap(cm, annot=True if simple else annot,
+                ax = sns.heatmap(cm, annot=True if simple else annot,
                                  fmt="d" if simple else "",
                                  linewidth=.5, cmap="YlGnBu", linecolor="Black",
                                  figure=fig,
                                  xticklabels=self.classes, yticklabels=self.classes)
+                ax.set_yticklabels(ax.get_yticklabels(), rotation = 90, fontsize = 8)
+                ax.set_xticklabels(ax.get_xticklabels(), rotation = -45, fontsize = 8)
                 self.writer.add_figure(f"Confusion Matrix/{tag}", fig, global_step=self.counter)
         return self
 
     def plot_precision_recall(self):
         if all(["train" in self.train_type, "valid" in self.train_type]):
             actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
-            output_valid = classification_report(actual, pred, output_dict=True)
+            output_valid = classification_report(actual, pred, output_dict=True, target_names=self.classes)
             actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
-            output_train = classification_report(actual, pred, output_dict=True)
+            output_train = classification_report(actual, pred, output_dict=True, target_names=self.classes)
             for key in output_train:
                 if isinstance(output_train[key], dict):
                     for key1 in output_train[key]:
@@ -127,20 +129,41 @@ class Report:
                     self.writer.add_scalars(key, scaler_tag, self.counter)
         return self
 
-    def plot_missclassification_count(self,):
-        if all(["train" in self.train_type, "valid" in self.train_type]):
+    def plot_missclassification_count(self, at_which_epoch):
+        if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
             actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
-            valid_fp, valid_fn,= self.calculate_fp_fn(actual, pred)
-            actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
-            train_fp, train_fn,= self.calculate_fp_fn(actual, pred)
-            self.writer.add_scalars()
+            valid_fp, valid_fn = self.calculate_fp_fn(actual, pred)
+            x = np.arange(len(self.classes))  # the label locations
+            width = 0.35  # the width of the bars
+            fig, ax = plt.subplots(figsize=(8, 6))
+            rects1 = ax.bar(x - width / 2, valid_fp, width, label='FP')
+            rects2 = ax.bar(x + width / 2, valid_fn, width, label='FN')
+            ax.set_ylabel('Count')
+            ax.set_title('Count of False Positive and False Negative')
+            ax.set_xticks(x)
+            ax.set_xticklabels(self.classes, rotation=-45)
+            ax.legend()
+
+            def autolabel(rects):
+                """Attach a text label above each bar in *rects*, displaying its height."""
+                for rect in rects:
+                    height = rect.get_height()
+                    ax.annotate('{}'.format(height),
+                                xy=(rect.get_x() + rect.get_width() / 2, height),
+                                xytext=(0, 5),  # 3 points vertical offset
+                                textcoords="offset points",
+                                ha='center', va='bottom')
+
+            autolabel(rects1)
+            autolabel(rects2)
+            fig.tight_layout()
+            self.writer.add_figure("Misclassification/valid", fig, self.counter)
+        return self
 
     def calculate_fp_fn(self, actual, pred):
-        true_sum = np.bincount(actual,minlength = len(self.classes))
-        pred_sum = np.bincount(pred,minlength = len(self.classes))
-        tp_sum=np.bincount(actual[actual==pred],minlength = len(self.classses))
-        fp = (pred_sum-tp_sum)
-        fn = (true_sum-tp_sum)
+        true_sum = np.bincount(actual, minlength=len(self.classes))
+        pred_sum = np.bincount(pred, minlength=len(self.classes))
+        tp_sum = np.bincount(actual[actual == pred], minlength=len(self.classes))
+        fp = (pred_sum - tp_sum)
+        fn = (true_sum - tp_sum)
         return fp, fn
-
-
