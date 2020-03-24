@@ -101,14 +101,14 @@ class Report:
                             c = cm[i, j]
                             p = cm_perc[i, j]
                             annot[i, j] = "0" if c == 0 else f"{c}/{summ}\n{p:.1f}%"
-                fig = plt.figure(figsize=(10, 10) if simple else (15, 10))
+                fig = plt.figure(figsize=(10, 8) if simple else (15, 8))
                 ax = sns.heatmap(cm, annot=True if simple else annot,
                                  fmt="d" if simple else "",
                                  linewidth=.5, cmap="YlGnBu", linecolor="Black",
                                  figure=fig,
                                  xticklabels=self.classes, yticklabels=self.classes)
-                ax.set_yticklabels(ax.get_yticklabels(), rotation = 90, fontsize = 8)
-                ax.set_xticklabels(ax.get_xticklabels(), rotation = -45, fontsize = 8)
+                ax.set_yticklabels(ax.get_yticklabels(), rotation = -45, fontsize = 10)
+                ax.set_xticklabels(ax.get_xticklabels(), rotation = -45, fontsize = 10)
                 self.writer.add_figure(f"Confusion Matrix/{tag}", fig, global_step=self.counter)
         return self
 
