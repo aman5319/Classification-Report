@@ -7,11 +7,13 @@ from utils import convert_prob_to_label
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report, matthews_corrcoef
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 
 class Report:
-    def __init__(self, writer=None, classes=None):
-        self.writer = SummaryWriter() if writer is None else writer
+    def __init__(self, classes=None):
+        logdir="logs/" + datetime.now().strftime("%d:%m:%Y-%H:%M:%S")
+        self.writer = SummaryWriter(log_dir=logdir)
         self.counter = 0
         self.train_type = ["train", "valid"]
         self.classes = [f"c{i}-{j}" for i, j in enumerate(classes)]
@@ -110,6 +112,9 @@ class Report:
                                  linewidth=.5, cmap="YlGnBu", linecolor="Black",
                                  figure=fig,
                                  xticklabels=self.classes, yticklabels=self.classes)
+                ax.set_xlabel("Predicted")
+                ax.set_ylabel("Actual")
+                ax.set_title("Confusion Matrix")
                 ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=10)
                 ax.set_xticklabels(ax.get_xticklabels(), rotation=-45, fontsize=10)
                 self.writer.add_figure(f"Confusion Matrix/{tag}", fig, global_step=self.counter)
@@ -180,3 +185,8 @@ class Report:
             scalar_tag = {"train": output_train, "valid": output_valid}
             self.writer.add_scalars("MCC", scalar_tag, self.counter)
         return self
+
+    def plot_predic_prob(self,):
+        if all(["train" in self.train_type, "valid" in self.train_type]):
+            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
+            
