@@ -37,12 +37,21 @@ class Config(object):
     def __str__(self,):
         return json.dumps(self.__dict__)
 
-    def save_config(self, path):
+    def save_config_json(self, path):
         with open(str(path), "w") as f:
-            json.dump(self.__dict__, f)
+            d = {**self.__dict__}
+            for i in self.__dict__.keys():
+                if isinstance(d[i], Config):
+                    d[i] = d[i].__dict__
+            json.dump(d, f)
         print("Configuration Saved")
 
-    def load_config(self, path):
+    @classmethod
+    def load_config_json(cls, path):
         with open(str(path)) as f:
-            self.update(**json.load(f))
-        print("Saved Configuration Loaded")
+            d = json.load(f)
+            for i in d.keys():
+                if isinstance(d[i],dict):
+                    d[i] = Config(**d[i])
+            print("Saved Configuration Loaded")
+            return cls(**d)
