@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 
 def convert_prob_to_label(data: np.ndarray) -> np.ndarray:
@@ -32,3 +33,16 @@ class Config(object):
                     getattr(self, attr).extend(values)
                 else:
                     getattr(self, attr).append(values)
+
+    def __str__(self,):
+        return json.dumps(self.__dict__)
+
+    def save_config(self, path):
+        with open(str(path), "w") as f:
+            json.dump(self.__dict__, f)
+        print("Configuration Saved")
+
+    def load_config(self, path):
+        with open(str(path)) as f:
+            self.update(**json.load(f))
+        print("Saved Configuration Loaded")
