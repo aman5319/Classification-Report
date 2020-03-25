@@ -12,8 +12,10 @@ import re
 
 
 class Report:
-    def __init__(self, classes=None):
+    def __init__(self, dir_name=None, classes=None):
         logdir = "logs/" + datetime.now().strftime("%d:%m:%Y-%H:%M:%S")
+        if dir_name is not None:
+            logdir = logdir + f"_{dir_name}"
         self.writer = SummaryWriter(log_dir=logdir, flush_secs=15)
         self.counter = 0
         self.train_type = ["train", "valid"]
@@ -43,7 +45,7 @@ class Report:
         return self
 
     def update_loss(self, loss, batch_size, train_type):
-        self.loss_count.update({train_type: self.change_data_type(loss*batch_size, "f")})
+        self.loss_count.update({train_type: self.change_data_type(loss * batch_size, "f")})
         return self
 
     def update_data_iter(self, batch_size, train_type):
@@ -62,7 +64,7 @@ class Report:
         self.clean_flag = False
         self.loss_count = Counter(dict(zip(self.train_type, [0] * len(self.train_type))))
         self.data_count = copy.deepcopy(self.loss_count)
-        if getattr(self,"iter_count",None) is None:
+        if getattr(self, "iter_count", None) is None:
             self.iter_count = copy.deepcopy(self.loss_count)
         self.act_pred_dict = dict(zip(self.train_type, [copy.deepcopy(dict()) for i in self.train_type]))
 
@@ -216,5 +218,5 @@ class Report:
                     tag_string = f"{key}"
                 self.writer.add_histogram(tag_string, value.clone().detach().cpu().numpy(), count)
                 if value.grad is not None:
-                    self.writer.add_histogram(tag_string+"/grad", value.grad.clone().detach().cpu().numpy(), count)
+                    self.writer.add_histogram(tag_string + "/grad", value.grad.clone().detach().cpu().numpy(), count)
         return self
