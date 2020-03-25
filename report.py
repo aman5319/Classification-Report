@@ -12,8 +12,8 @@ from datetime import datetime
 
 class Report:
     def __init__(self, classes=None):
-        logdir="logs/" + datetime.now().strftime("%d:%m:%Y-%H:%M:%S")
-        self.writer = SummaryWriter(log_dir=logdir)
+        logdir = "logs/" + datetime.now().strftime("%d:%m:%Y-%H:%M:%S")
+        self.writer = SummaryWriter(log_dir=logdir, flush_secs=15)
         self.counter = 0
         self.train_type = ["train", "valid"]
         self.classes = [f"c{i}-{j}" for i, j in enumerate(classes)]
@@ -76,10 +76,11 @@ class Report:
 
     def write_to_tensorboard(self):
         self.plot_loss()
-        self.plot_confusion_matrix(5,simple=False)
+        self.plot_confusion_matrix(5, simple=False)
         self.plot_precision_recall()
         self.plot_missclassification_count(5)
         self.plot_mcc()
+        self.plot_pred_prob(at_which_epoch=5)
 
     def plot_loss(self,):
         loss_main_tag = "Loss"
@@ -186,7 +187,13 @@ class Report:
             self.writer.add_scalars("MCC", scalar_tag, self.counter)
         return self
 
-    def plot_predic_prob(self,):
-        if all(["train" in self.train_type, "valid" in self.train_type]):
-            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
-            
+    def plot_pred_prob(self, at_which_epoch):
+        if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
+            actual, pred = self.act_pred_dict["valid"]["actual"], self.act_pred_dict["valid"]["pred"]
+            for index, value in enumerate(self.classes):
+                f, ax = plt.subplots(1, 1, figsize=(10, 10))
+                temp = np.max(pred, axis=-1)[actual == index]
+                ax.set_title(value)
+                sns.distplot(temp, hist=True, kde=True, color="g", kde_kws={"shade": True}, ax=ax)
+                self.writer.add_figure(f"Prediction Probability/{value}/valid", f, self.counter)
+        return self
