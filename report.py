@@ -191,9 +191,9 @@ class Report:
         if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
             actual, pred = self.act_pred_dict["valid"]["actual"], self.act_pred_dict["valid"]["pred"]
             for index, value in enumerate(self.classes):
-                f, ax = plt.subplots(1, 1, figsize=(10, 10))
+                f, ax = plt.subplots(1, 1, figsize=(8, 6))
                 temp = np.max(pred, axis=-1)[actual == index]
                 ax.set_title(value)
-                sns.distplot(temp, hist=True, kde=True, color="g", kde_kws={"shade": True}, ax=ax)
+                sns.scatterplot(x=temp, y=[*range(len(temp))], ax=ax)
                 self.writer.add_figure(f"Prediction Probability/{value}/valid", f, self.counter)
         return self
