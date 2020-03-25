@@ -55,3 +55,7 @@ class Config(object):
                     d[i] = Config(**d[i])
             print("Saved Configuration Loaded")
             return cls(**d)
+
+class HyperParameters(Config):
+    def __init__(self,**configs):
+        self.update(**configs)
