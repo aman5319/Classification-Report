@@ -8,6 +8,7 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report, matthews_corrcoef
 import matplotlib.pyplot as plt
 from datetime import datetime
+import re
 
 
 class Report:
@@ -42,7 +43,7 @@ class Report:
         return self
 
     def update_loss(self, loss, batch_size, train_type):
-        self.loss_count.update({train_type: self.change_data_type(loss, "f")})
+        self.loss_count.update({train_type: self.change_data_type(loss*batch_size, "f")})
         return self
 
     def update_data_iter(self, batch_size, train_type):
@@ -61,7 +62,8 @@ class Report:
         self.clean_flag = False
         self.loss_count = Counter(dict(zip(self.train_type, [0] * len(self.train_type))))
         self.data_count = copy.deepcopy(self.loss_count)
-        self.iter_count = copy.deepcopy(self.loss_count)
+        if getattr(self,"iter_count",None) is None:
+            self.iter_count = copy.deepcopy(self.loss_count)
         self.act_pred_dict = dict(zip(self.train_type, [copy.deepcopy(dict()) for i in self.train_type]))
 
     def change_data_type(self, data, required_data_type):
@@ -84,11 +86,12 @@ class Report:
 
     def plot_loss(self,):
         loss_main_tag = "Loss"
-        self.loss_count = {i: j / self.iter_count[i] for i, j in self.loss_count.items()}
+        self.loss_count = {i: j / self.data_count[i] for i, j in self.loss_count.items()}
         self.writer.add_scalars(loss_main_tag, self.loss_count, self.counter)
         return self
 
     def plot_model(self, model, data):
+        self.model = model
         self.writer.add_graph(model, data)
         return self
 
@@ -196,4 +199,22 @@ class Report:
                 ax.set_title(value)
                 sns.scatterplot(x=temp, y=[*range(len(temp))], ax=ax)
                 self.writer.add_figure(f"Prediction Probability/{value}/valid", f, self.counter)
+        return self
+
+    def plot_model_data_grad(self, at_which_iter):
+        if self.iter_count["train"] % at_which_iter == 0:
+            count = self.iter_count["train"] // at_which_iter
+            pattern = re.compile(".weight|.bias")
+            for key, value in self.model.named_parameters():
+                tag_string = ""
+                search = pattern.search(key)
+                if search is not None:
+                    key2 = search.group(0)
+                    key1 = pattern.split(key, maxsplit=1)[0]
+                    tag_string = f"{key1}/{key2}"
+                else:
+                    tag_string = f"{key}"
+                self.writer.add_histogram(tag_string, value.clone().detach().cpu().numpy(), count)
+                if value.grad is not None:
+                    self.writer.add_histogram(tag_string+"/grad", value.grad.clone().detach().cpu().numpy(), count)
         return self
