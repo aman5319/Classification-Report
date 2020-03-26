@@ -1,5 +1,6 @@
 import numpy as np
 import json
+import collections
 
 
 def convert_prob_to_label(data: np.ndarray) -> np.ndarray:
@@ -35,27 +36,43 @@ class Config(object):
                     getattr(self, attr).append(values)
 
     def __str__(self,):
-        return json.dumps(self.__dict__)
+        return str(self.get_dict_repr())
 
     def save_config_json(self, path):
         with open(str(path), "w") as f:
-            d = {**self.__dict__}
-            for i in self.__dict__.keys():
-                if isinstance(d[i], Config):
-                    d[i] = d[i].__dict__
-            json.dump(d, f)
-        print("Configuration Saved")
+            json.dump(self.get_dict_repr(), f)
+            print("Configuration Saved")
 
     @classmethod
     def load_config_json(cls, path):
         with open(str(path)) as f:
             d = json.load(f)
             for i in d.keys():
-                if isinstance(d[i],dict):
+                if isinstance(d[i], dict):
                     d[i] = Config(**d[i])
             print("Saved Configuration Loaded")
             return cls(**d)
 
+    def get_dict_repr(self,):
+        d = {**self.__dict__}
+        for i in self.__dict__.keys():
+            if isinstance(d[i], Config):
+                d[i] = d[i].__dict__
+        return d
+
+
 class HyperParameters(Config):
-    def __init__(self,**configs):
+
+    def __init__(self, **configs):
         self.update(**configs)
+
+    @staticmethod
+    def flatten(d, parent_key='', sep='_'):
+        items = []
+        for k, v in  d.items():
+            new_key = parent_key + sep + k if parent_key else k
+            if isinstance(v, collections.MutableMapping):
+                items.extend(HyperParameters.flatten(v, new_key, sep=sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)

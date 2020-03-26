@@ -3,7 +3,7 @@ from collections import Counter
 import numpy as np
 import torch
 import copy
-from utils import convert_prob_to_label
+from utils import convert_prob_to_label, HyperParameters
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report, matthews_corrcoef
 import matplotlib.pyplot as plt
@@ -64,6 +64,7 @@ class Report:
         self.clean_flag = False
         self.loss_count = Counter(dict(zip(self.train_type, [0] * len(self.train_type))))
         self.data_count = copy.deepcopy(self.loss_count)
+        self.mcc = copy.deepcopy(self.loss_count)
         if getattr(self, "iter_count", None) is None:
             self.iter_count = copy.deepcopy(self.loss_count)
         self.act_pred_dict = dict(zip(self.train_type, [copy.deepcopy(dict()) for i in self.train_type]))
@@ -189,6 +190,7 @@ class Report:
             actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
             output_train = matthews_corrcoef(actual, pred)
             scalar_tag = {"train": output_train, "valid": output_valid}
+            self.mcc.update(scalar_tag)
             self.writer.add_scalars("MCC", scalar_tag, self.counter)
         return self
 
@@ -219,4 +221,13 @@ class Report:
                 self.writer.add_histogram(tag_string, value.clone().detach().cpu().numpy(), count)
                 if value.grad is not None:
                     self.writer.add_histogram(tag_string + "/grad", value.grad.clone().detach().cpu().numpy(), count)
+        return self
+
+    def plot_hparams(self, config):
+        d = config.get_dict_repr()
+        hparam_dict = HyperParameters.flatten(d)
+        metric_dict = {"Loss": self.loss_count["valid"]}
+        if "valid" in self.mcc:
+            metric_dict.update({"MCC": self.mcc["valid"]})
+        self.writer.add_hparams(hparam_dict, metric_dict)
         return self
