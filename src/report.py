@@ -10,6 +10,7 @@ from sklearn.metrics import confusion_matrix, classification_report, matthews_co
 import matplotlib.pyplot as plt
 from datetime import datetime
 import re
+from .return_types import LossType, ActualType, PredictionType, TrainType
 
 __all__ = ["Report"]
 
@@ -45,21 +46,53 @@ class Report:
         if dir_name is not None:
             logdir = logdir + f"_{dir_name}"
         self.writer = SummaryWriter(log_dir=logdir, flush_secs=15)
-        self.counter = 0
+        self.counter = 0  # epoch counter
         self.train_type = ["train", "valid"]
         self.classes = [f"c{i}-{j}" for i, j in enumerate(classes)]
-        self.clean_flag = True
+        self.clean_flag = True  # Flag to be used to flush the data module to store new data after the epoch
 
-    def write_a_batch(self, loss, batch_size, actual, prediction, train_type="train"):
+    def write_a_batch(self, loss: LossType,
+                      batch_size: int,
+                      actual: ActualType,
+                      prediction: PredictionType,
+                      train: bool = True):
+        """This Methods records the batch information during train and val phase.
+
+        During Training Phase and validation record the loss, batch Actual labels and Predicted labels.
+
+        Args:
+            loss (LossType): The batch loss.
+            batch_size (int): The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
+            actual (ActualType): The Actual Labels.
+            prediction (PredictionType): The Predicted Labels.
+            train (bool):  True signifies training mode and False Validation Mode.
+
+        Returns:
+            Report Class Instance.
+
+        """
         if self.clean_flag:
             self.init_data_storage()
-        assert train_type in self.train_type, f"Train type {train_type} not in the list {self.train_type}"
+        train_type = self.train_type[not train]
         self.update_data_iter(batch_size, train_type)
         self.update_loss(loss, batch_size, train_type)
         self.update_actual_prediction(actual, prediction, train_type)
         return self
 
-    def update_actual_prediction(self, actual, prediction, train_type):
+    def update_actual_prediction(self, actual: ActualType,
+                                 prediction: PredictionType,
+                                 train_type: TrainType):
+        """Stores Actual and Predicted labels seperately for training and validation and after every batch call the values are appended.
+        Args:
+            actual (ActualType): The Actual Labels.
+            prediction (PredictionType): The Predicted Labels.
+            train_type (TrainType): The Labels belong to `train` or `valid`.
+
+        Returns:
+            Report Class Instances.
+
+        """
+
         actual = self.change_data_type(actual, "np")
         pred = self.change_data_type(prediction, "np")
         if "actual" not in self.act_pred_dict[train_type]:
@@ -72,11 +105,37 @@ class Report:
             self.act_pred_dict[train_type]["pred"] = np.concatenate((self.act_pred_dict[train_type]["pred"], pred))
         return self
 
-    def update_loss(self, loss, batch_size, train_type):
-        self.loss_count.update({train_type: self.change_data_type(loss * batch_size, "f")})
+    def update_loss(self, loss: LossType,
+                    batch_size: int,
+                    train_type: TrainType):
+        """Accumlates Loss for every batch seperately for training and validation.
+
+        Args:
+            loss (LossType): The batch loss.
+            batch_size (int): The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
+            train_type (TrainType): The Labels belong to `train` or `valid`.
+
+        Returns:
+           Report Class Instance
+
+        """
+        self.loss_count.update({train_type: self.change_data_type(loss, "f") * batch_size})
         return self
 
-    def update_data_iter(self, batch_size, train_type):
+    def update_data_iter(self,
+                         batch_size: int,
+                         train_type: TrainType):
+        """Accumlates the Iteration count and Data Point count for training and Validation.
+
+        Args:
+            batch_size (int): The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
+            train_type (TrainType): The Labels belong to `train` or `valid`.
+
+        Returns:
+           Report Class Instance
+
+        """
+
         self.data_count.update({train_type: batch_size})
         self.iter_count.update({train_type: 1})
         return self
