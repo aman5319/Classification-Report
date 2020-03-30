@@ -84,7 +84,7 @@ setup(
     include_package_data=True,
 
     install_requires=user_deb,
-    extras_requires=dev_deb,
+    extras_require=dev_deb,
     python_requires=">=3.6.0",
 
     classifiers=["Development Status :: 5 - Production/Stable",

@@ -1,5 +1,5 @@
-import json
 import collections
+import json
 
 __all__ = ["Config", "HyperParameters"]
 
@@ -18,6 +18,7 @@ class Config(object):
         3
 
     """
+
     def __init__(self, **kwargs):
         self.update(**kwargs)
 
@@ -33,8 +34,7 @@ class Config(object):
     def update(self, **kwargs):
         """To update the config class attributes values.
 
-        This will add new attribute for a non existing attribute in the Config class 
-        or replace the value with a new a value for an existing attribute.
+        This will add new attribute for a non existing attribute in the Config class or replace the value with a new a value for an existing attribute.
 
         Args:
             **kwargs: Arbitrary keyword arguments.
@@ -54,7 +54,7 @@ class Config(object):
         """This is method can be used to append values to an existing attribute.
 
         For Example if using Lr Scheduler then this can be use to track all lr values by appending in a list.
-        
+
         Note:
             The attribute should be prexisiting.
 
@@ -89,7 +89,7 @@ class Config(object):
         return str(self.get_dict_repr())
 
     def save_config_json(self, path):
-        """Save the Configuration in Json format.
+        """Save the Configuration in json format.
 
         Args:
             path: (str) The file path to save json file.
@@ -106,7 +106,7 @@ class Config(object):
 
     @classmethod
     def load_config_json(cls, path):
-        """ Loading the saved Configuration.
+        """ Loading the saved configuration.
 
         Args:
             path: (str) The file from json config will be loaded.
@@ -148,13 +148,13 @@ class Config(object):
 
 
 class HyperParameters(Config):
-    """ It stores collections of Config in one place. It inherits the Config Class.
+    """ It stores collections of Config in one place. It inherits the Config class.
 
     Args:
-        **config: Arbitary Config Objects
+        **config: Arbitary Config objects
 
     Raises:
-        AssertionError: Pass only Config class Object.
+        AssertionError: Pass only Config class object.
 
     Examples::
         >>> model_config = Config(**{'hid_dim': 512,'n_layers': 8,'n_heads': 8,'pf_dim': 2048,'dropout': 0.1})
@@ -175,16 +175,16 @@ class HyperParameters(Config):
         self.update(**configs)
 
     @staticmethod
-    def flatten(d, parent_key='', sep='_'):
-        """ Flatten the nested dictionary using Recusrion.
+    def flatten(d, parent_key="", sep="_"):
+        """ Flatten the nested dictionary using recusrion.
 
         Args:
-            d: (dict) The Dictionary to flatten.
+            d: (dict) The dictionary to flatten.
             parent_key: (str) The parent key.
             sep: (str) The sep to be used to join parent_key with nested_key
 
         Returns:
-            dict: Flattened Dictionary.
+            dict: Flattened dictionary.
         """
         items = []
         for k, v in d.items():

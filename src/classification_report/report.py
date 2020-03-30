@@ -1,16 +1,18 @@
-from torch.utils.tensorboard import SummaryWriter
-from collections import Counter
-import numpy as np
-import torch
 import copy
-from .utils import convert_prob_to_label
-from .config import HyperParameters
-import seaborn as sns
-from sklearn.metrics import confusion_matrix, classification_report, matthews_corrcoef
-import matplotlib.pyplot as plt
-from datetime import datetime
 import re
-from .return_types import LossType, ActualType, PredictionType, TrainType
+from collections import Counter
+from datetime import datetime
+
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import torch
+from sklearn.metrics import classification_report, confusion_matrix, matthews_corrcoef
+from torch.utils.tensorboard import SummaryWriter
+
+from .config import HyperParameters
+from .return_types import ActualType, LossType, PredictionType, TrainType
+from .utils import convert_prob_to_label
 
 __all__ = ["Report"]
 
@@ -34,6 +36,7 @@ class Report:
         10. Hyparameter Tracking.
 
     """
+
     def __init__(self, classes: TrainType, dir_name: str = None):
         """
 
@@ -51,11 +54,9 @@ class Report:
         self.classes = [f"c{i}-{j}" for i, j in enumerate(classes)]
         self.clean_flag = True  # Flag to be used to flush the data module to store new data after the epoch
 
-    def write_a_batch(self, loss: LossType,
-                      batch_size: int,
-                      actual: ActualType,
-                      prediction: PredictionType,
-                      train: bool = True):
+    def write_a_batch(
+        self, loss: LossType, batch_size: int, actual: ActualType, prediction: PredictionType, train: bool = True
+    ):
         """This methods records the batch information during train and val phase.
 
         During training and validation record the loss, batch actual labels and predicted labels.
@@ -82,9 +83,7 @@ class Report:
         self.update_actual_prediction(actual, prediction, train_type)
         return self
 
-    def update_actual_prediction(self, actual: ActualType,
-                                 prediction: PredictionType,
-                                 train_type: TrainType):
+    def update_actual_prediction(self, actual: ActualType, prediction: PredictionType, train_type: TrainType):
         """Stores actual and predicted labels seperately for training and validation and after every batch call the values are appended.
         Args:
             actual: The actual labels.
@@ -101,16 +100,16 @@ class Report:
         if "actual" not in self.act_pred_dict[train_type]:
             self.act_pred_dict[train_type]["actual"] = actual
         else:
-            self.act_pred_dict[train_type]["actual"] = np.concatenate((self.act_pred_dict[train_type]["actual"], actual))
+            self.act_pred_dict[train_type]["actual"] = np.concatenate(
+                (self.act_pred_dict[train_type]["actual"], actual)
+            )
         if "pred" not in self.act_pred_dict[train_type]:
             self.act_pred_dict[train_type]["pred"] = pred
         else:
             self.act_pred_dict[train_type]["pred"] = np.concatenate((self.act_pred_dict[train_type]["pred"], pred))
         return self
 
-    def update_loss(self, loss: LossType,
-                    batch_size: int,
-                    train_type: TrainType):
+    def update_loss(self, loss: LossType, batch_size: int, train_type: TrainType):
         """Accumlates loss for every batch seperately for training and validation.
 
         Args:
@@ -125,9 +124,7 @@ class Report:
         self.loss_count.update({train_type: self.change_data_type(loss, "f") * batch_size})
         return self
 
-    def update_data_iter(self,
-                         batch_size: int,
-                         train_type: TrainType):
+    def update_data_iter(self, batch_size: int, train_type: TrainType):
         """Accumlates the iteration count and data point count for training and validation.
 
         Args:
@@ -255,11 +252,17 @@ class Report:
                         p = cm_perc[i, j]
                         annot[i, j] = "0" if c == 0 else f"{c}/{summ}\n{p:.1f}%"
                 fig = plt.figure(figsize=(15, 8))
-                ax = sns.heatmap(cm, annot=annot,
-                                 fmt="",
-                                 linewidth=.5, cmap="YlGnBu", linecolor="Black",
-                                 figure=fig,
-                                 xticklabels=self.classes, yticklabels=self.classes)
+                ax = sns.heatmap(
+                    cm,
+                    annot=annot,
+                    fmt="",
+                    linewidth=0.5,
+                    cmap="YlGnBu",
+                    linecolor="Black",
+                    figure=fig,
+                    xticklabels=self.classes,
+                    yticklabels=self.classes,
+                )
                 ax.set_xlabel("Predicted")
                 ax.set_ylabel("Actual")
                 ax.set_title("Confusion Matrix")
@@ -276,9 +279,15 @@ class Report:
 
         """
         if all(["train" in self.train_type, "valid" in self.train_type]):
-            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
+            actual, pred = (
+                self.act_pred_dict["valid"]["actual"],
+                convert_prob_to_label(self.act_pred_dict["valid"]["pred"]),
+            )
             output_valid = classification_report(actual, pred, output_dict=True, target_names=self.classes)
-            actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
+            actual, pred = (
+                self.act_pred_dict["train"]["actual"],
+                convert_prob_to_label(self.act_pred_dict["train"]["pred"]),
+            )
             output_train = classification_report(actual, pred, output_dict=True, target_names=self.classes)
             for key in output_train:
                 if isinstance(output_train[key], dict):
@@ -305,15 +314,18 @@ class Report:
 
         """
         if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
-            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
+            actual, pred = (
+                self.act_pred_dict["valid"]["actual"],
+                convert_prob_to_label(self.act_pred_dict["valid"]["pred"]),
+            )
             valid_fp, valid_fn = self.calculate_fp_fn(actual, pred)
             x = np.arange(len(self.classes))  # the label locations
             width = 0.35  # the width of the bars
             fig, ax = plt.subplots(figsize=(8, 6))
-            rects1 = ax.bar(x - width / 2, valid_fp, width, label='FP')
-            rects2 = ax.bar(x + width / 2, valid_fn, width, label='FN')
-            ax.set_ylabel('Count')
-            ax.set_title('Count of False Positive and False Negative')
+            rects1 = ax.bar(x - width / 2, valid_fp, width, label="FP")
+            rects2 = ax.bar(x + width / 2, valid_fn, width, label="FN")
+            ax.set_ylabel("Count")
+            ax.set_title("Count of False Positive and False Negative")
             ax.set_xticks(x)
             ax.set_xticklabels(self.classes, rotation=-45)
             ax.legend()
@@ -322,11 +334,14 @@ class Report:
                 """Attach a text label above each bar in *rects*, displaying its height."""
                 for rect in rects:
                     height = rect.get_height()
-                    ax.annotate('{}'.format(height),
-                                xy=(rect.get_x() + rect.get_width() / 2, height),
-                                xytext=(0, 5),  # 3 points vertical offset
-                                textcoords="offset points",
-                                ha='center', va='bottom')
+                    ax.annotate(
+                        "{}".format(height),
+                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                        xytext=(0, 5),  # 3 points vertical offset
+                        textcoords="offset points",
+                        ha="center",
+                        va="bottom",
+                    )
 
             autolabel(rects1)
             autolabel(rects2)
@@ -348,8 +363,8 @@ class Report:
         true_sum = np.bincount(actual, minlength=len(self.classes))
         pred_sum = np.bincount(pred, minlength=len(self.classes))
         tp_sum = np.bincount(actual[actual == pred], minlength=len(self.classes))
-        fp = (pred_sum - tp_sum)
-        fn = (true_sum - tp_sum)
+        fp = pred_sum - tp_sum
+        fn = true_sum - tp_sum
         return fp, fn
 
     def plot_mcc(self,):
@@ -360,9 +375,15 @@ class Report:
 
         """
         if all(["train" in self.train_type, "valid" in self.train_type]):
-            actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
+            actual, pred = (
+                self.act_pred_dict["valid"]["actual"],
+                convert_prob_to_label(self.act_pred_dict["valid"]["pred"]),
+            )
             output_valid = matthews_corrcoef(actual, pred)
-            actual, pred = self.act_pred_dict["train"]["actual"], convert_prob_to_label(self.act_pred_dict["train"]["pred"])
+            actual, pred = (
+                self.act_pred_dict["train"]["actual"],
+                convert_prob_to_label(self.act_pred_dict["train"]["pred"]),
+            )
             output_train = matthews_corrcoef(actual, pred)
             scalar_tag = {"train": output_train, "valid": output_valid}
             self.mcc.update(scalar_tag)

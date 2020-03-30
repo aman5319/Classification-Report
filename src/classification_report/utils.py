@@ -1,6 +1,5 @@
 import numpy as np
 
-
 __all__ = ["convert_prob_to_label"]
 
 
