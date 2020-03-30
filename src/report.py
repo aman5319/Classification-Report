@@ -60,6 +60,9 @@ class Report:
 
         During training and validation record the loss, batch actual labels and predicted labels.
 
+        Note:
+            For prediction don't pass raw_logits pass softmax output.
+
         Args:
             loss: The batch loss.
             batch_size: The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
@@ -428,6 +431,7 @@ class Report:
         """
         d = config.get_dict_repr()
         hparam_dict = HyperParameters.flatten(d)
+        hparam_dict = {i: j for i, j in hparam_dict.items() if isinstance(j, (int, float, str, bool,))}
         metric_dict = {"Loss": self.loss_count["valid"]}
         if "valid" in self.mcc:
             metric_dict.update({"MCC": self.mcc["valid"]})

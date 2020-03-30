@@ -171,7 +171,7 @@ class HyperParameters(Config):
     """
 
     def __init__(self, **configs):
-        assert all([isinstance(j, Config) for i, j in configs]), "Pass only Config class Object."
+        assert all([isinstance(j, Config) for i, j in configs.items()]), "Pass only Config class Object."
         self.update(**configs)
 
     @staticmethod
