@@ -25,7 +25,7 @@ To create the package for pypi.
 """
 
 from setuptools import find_packages, setup
-from src.classification_report import __version__
+from src.classification_report.version import __version__
 
 # normal dependencies ###
 #
@@ -60,7 +60,8 @@ dev_deb = {"dev": ["sphinx",  # documentation
                    "recommonmark",  # markdown support for sphinx
                    "black",  # Code Formatting
                    "flake8",  # linting
-                   "isort"  # formatting sort
+                   "isort",  # formatting sort
+                   "twine",
                    "ipython",
                    "jupyter"]}
 
@@ -79,7 +80,7 @@ setup(
     author_email="amanpandey5319@gmail.com",
 
     package_dir={"": "src"},
-    packages=find_packages(),
+    packages=find_packages("src"),
     include_package_data=True,
 
     install_requires=user_deb,
@@ -98,7 +99,7 @@ setup(
                  "Programming Language :: Python :: 3.7",
                  "Topic :: Scientific/Engineering :: Artificial Intelligence"],
     project_urls={
-        "Documentation": "",
+        "Documentation": "https://github.com/aman5319/Classification-Report/blob/master/README.md",
         "Source": "https://github.com/aman5319/Classification-Report",
         "Bug Trackers": "https://github.com/aman5319/Classification-Report/issues"
     },
