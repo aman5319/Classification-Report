@@ -34,12 +34,12 @@ class Report:
         10. Hyparameter Tracking.
 
     """
-    def __init__(self, classes, dir_name=None):
+    def __init__(self, classes: TrainType, dir_name: str = None):
         """
 
         Args:
-            classes (list): A List of classes.
-            dir_name: (str, optional): Directory Name where tensorboard logs will be saved.
+            classes: A list of classes.
+            dir_name: Directory name where tensorboard logs will be saved.
 
         """
         logdir = "runs/" + datetime.now().strftime("%d:%m:%Y-%H:%M:%S")
@@ -56,19 +56,19 @@ class Report:
                       actual: ActualType,
                       prediction: PredictionType,
                       train: bool = True):
-        """This Methods records the batch information during train and val phase.
+        """This methods records the batch information during train and val phase.
 
-        During Training Phase and validation record the loss, batch Actual labels and Predicted labels.
+        During training and validation record the loss, batch actual labels and predicted labels.
 
         Args:
-            loss (LossType): The batch loss.
-            batch_size (int): The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
-            actual (ActualType): The Actual Labels.
-            prediction (PredictionType): The Predicted Labels.
-            train (bool):  True signifies training mode and False Validation Mode.
+            loss: The batch loss.
+            batch_size: The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
+            actual: The actual labels.
+            prediction: The predicted labels.
+            train:  True signifies training mode and False Validation Mode.
 
         Returns:
-            Report Class Instance.
+            Report class instance.
 
         """
         if self.clean_flag:
@@ -82,14 +82,14 @@ class Report:
     def update_actual_prediction(self, actual: ActualType,
                                  prediction: PredictionType,
                                  train_type: TrainType):
-        """Stores Actual and Predicted labels seperately for training and validation and after every batch call the values are appended.
+        """Stores actual and predicted labels seperately for training and validation and after every batch call the values are appended.
         Args:
-            actual (ActualType): The Actual Labels.
-            prediction (PredictionType): The Predicted Labels.
-            train_type (TrainType): The Labels belong to `train` or `valid`.
+            actual: The actual labels.
+            prediction: The predicted labels.
+            train_type: The labels belong to `train` or `valid`.
 
         Returns:
-            Report Class Instances.
+            Report class instances.
 
         """
 
@@ -108,15 +108,15 @@ class Report:
     def update_loss(self, loss: LossType,
                     batch_size: int,
                     train_type: TrainType):
-        """Accumlates Loss for every batch seperately for training and validation.
+        """Accumlates loss for every batch seperately for training and validation.
 
         Args:
-            loss (LossType): The batch loss.
-            batch_size (int): The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
-            train_type (TrainType): The Labels belong to `train` or `valid`.
+            loss: The batch loss.
+            batch_size: The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
+            train_type: The Labels belong to `train` or `valid`.
 
         Returns:
-           Report Class Instance
+           Report class instance.
 
         """
         self.loss_count.update({train_type: self.change_data_type(loss, "f") * batch_size})
@@ -125,14 +125,14 @@ class Report:
     def update_data_iter(self,
                          batch_size: int,
                          train_type: TrainType):
-        """Accumlates the Iteration count and Data Point count for training and Validation.
+        """Accumlates the iteration count and data point count for training and validation.
 
         Args:
-            batch_size (int): The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
-            train_type (TrainType): The Labels belong to `train` or `valid`.
+            batch_size: The batch size on which the loss was calculated. The batch_size may change during last iteration so calculate batch_size from data.
+            train_type: The Labels belong to `train` or `valid`.
 
         Returns:
-           Report Class Instance
+           Report class instance.
 
         """
 
@@ -140,14 +140,24 @@ class Report:
         self.iter_count.update({train_type: 1})
         return self
 
-    def plot_an_epoch(self, detail=False):
+    def plot_an_epoch(self, detail: bool = False):
+        """Plot an epoch method simplifies ploting standard things which are needed to be plotted after an epoch completion for granular control use this which `detail` = `False` and call other methods on top of it.
+
+        Args:
+            detail: whether to use detail mode or not.
+
+        Returns:
+            Report class instance.
+
+        """
         self.clean_flag = True
-        self.counter += 1
+        self.counter += 1  # One Epoch is completed update the counter by one.
         if not detail:
             self.write_to_tensorboard()
         return self
 
     def init_data_storage(self,):
+        """Clean the data storage units after every epoch."""
         self.clean_flag = False
         self.loss_count = Counter(dict(zip(self.train_type, [0] * len(self.train_type))))
         self.data_count = copy.deepcopy(self.loss_count)
@@ -156,7 +166,17 @@ class Report:
             self.iter_count = copy.deepcopy(self.loss_count)
         self.act_pred_dict = dict(zip(self.train_type, [copy.deepcopy(dict()) for i in self.train_type]))
 
-    def change_data_type(self, data, required_data_type):
+    def change_data_type(self, data: LossType, required_data_type: LossType):
+        """Change the data type of input to required data type.
+
+        Args:
+            data: Input data type.
+            required_data_type: Change the data type to given format, can be either `np` or `f`.
+
+        Returns:
+            The data in required data type.
+
+        """
         if required_data_type == "np" and isinstance(data, torch.Tensor):
             return data.clone().detach().cpu().numpy()
         if required_data_type == "f":
@@ -164,45 +184,76 @@ class Report:
         return data
 
     def close(self):
+        """Close the tensorboard writer object."""
         self.writer.close()
 
     def write_to_tensorboard(self):
+        """This methods call various other method which write on tensorboard."""
         self.plot_loss()
-        self.plot_confusion_matrix(5, simple=False)
+        self.plot_confusion_matrix(5)
         self.plot_precision_recall()
         self.plot_missclassification_count(5)
         self.plot_mcc()
         self.plot_pred_prob(at_which_epoch=5)
 
     def plot_loss(self,):
+        """Plots loss at the end of the epoch.
+
+        Returns:
+           Report class instance.
+
+        """
         loss_main_tag = "Loss"
         self.loss_count = {i: j / self.data_count[i] for i, j in self.loss_count.items()}
         self.writer.add_scalars(loss_main_tag, self.loss_count, self.counter)
         return self
 
-    def plot_model(self, model, data):
+    def plot_model(self, model: torch.nn.Module, data: torch.Tensor):
+        """Plot model graph.
+
+        Args:
+            model: The model architecture.
+            data: The input to the model.
+
+        Returns:
+           Report class instance.
+
+        """
         self.model = model
         self.writer.add_graph(model, data)
         return self
 
-    def plot_confusion_matrix(self, at_which_epoch, simple=True):
+    def plot_confusion_matrix(self, at_which_epoch):
+        """Plots confusion matrix.
+
+        Args:
+            at_which_epoch: After how many epochs the confusion matrix should be plotted. For example if the model is trained for 10 epochs and you want to plot confusion matrix after every 5 epoch then the input to this method will be 5.
+
+        Returns:
+            Report class instance.
+
+        """
         if self.counter % at_which_epoch == 0:
             for tag, value in self.act_pred_dict.items():
                 actual, pred = value["actual"], convert_prob_to_label(value["pred"])
+
+                # Generating Confusion Matrix
+
                 cm = confusion_matrix(actual, pred)
-                if not simple:
-                    cm_sum = np.sum(cm, axis=1, keepdims=True)
-                    cm_perc = cm / cm_sum * 100
-                    annot = np.empty_like(cm).astype(str)
-                    for i in range(cm.shape[0]):
-                        for j in range(cm.shape[1]):
-                            summ = cm_sum[i][0]
-                            c = cm[i, j]
-                            p = cm_perc[i, j]
-                            annot[i, j] = "0" if c == 0 else f"{c}/{summ}\n{p:.1f}%"
-                fig = plt.figure(figsize=(10, 8) if simple else (15, 8))
-                ax = sns.heatmap(cm, annot=True if simple else annot,
-                                 fmt="d" if simple else "",
+                cm_sum = np.sum(cm, axis=1, keepdims=True)
+                cm_perc = cm / cm_sum * 100
+                annot = np.empty_like(cm).astype(str)
+
+                # Generating Annotation
+                for i in range(cm.shape[0]):
+                    for j in range(cm.shape[1]):
+                        summ = cm_sum[i][0]
+                        c = cm[i, j]
+                        p = cm_perc[i, j]
+                        annot[i, j] = "0" if c == 0 else f"{c}/{summ}\n{p:.1f}%"
+                fig = plt.figure(figsize=(15, 8))
+                ax = sns.heatmap(cm, annot=annot,
+                                 fmt="",
                                  linewidth=.5, cmap="YlGnBu", linecolor="Black",
                                  figure=fig,
                                  xticklabels=self.classes, yticklabels=self.classes)
@@ -215,6 +266,12 @@ class Report:
         return self
 
     def plot_precision_recall(self):
+        """Plots Precision Recall F1-score graph for all Classes with Weighted Average and Macro Average.
+
+        Returns:
+            Report class instance.
+
+        """
         if all(["train" in self.train_type, "valid" in self.train_type]):
             actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
             output_valid = classification_report(actual, pred, output_dict=True, target_names=self.classes)
@@ -232,6 +289,18 @@ class Report:
         return self
 
     def plot_missclassification_count(self, at_which_epoch):
+        """Plot Misclassification Count for each class.
+
+        Bar graph for False Positive and False Negative Count.
+
+        Args:
+            at_which_epoch: After how many epochs the Misclassification Count should be plotted. For example if the model is trained for 10 epochs and you want to plot this after every 5 epoch then the input to this method will be 5.
+
+
+        Returns:
+            Report class instance.
+
+        """
         if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
             actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
             valid_fp, valid_fn = self.calculate_fp_fn(actual, pred)
@@ -262,7 +331,17 @@ class Report:
             self.writer.add_figure("Misclassification/valid", fig, self.counter)
         return self
 
-    def calculate_fp_fn(self, actual, pred):
+    def calculate_fp_fn(self, actual: ActualType, pred: PredictionType):
+        """Calculates False Postive and False Negative Count per class.
+
+        Args:
+            actual: The actual labels.
+            pred: The predicted Labels.
+
+        Returns:
+            Report class instance.
+
+        """
         true_sum = np.bincount(actual, minlength=len(self.classes))
         pred_sum = np.bincount(pred, minlength=len(self.classes))
         tp_sum = np.bincount(actual[actual == pred], minlength=len(self.classes))
@@ -271,6 +350,12 @@ class Report:
         return fp, fn
 
     def plot_mcc(self,):
+        """Plots Mathews Correlation Coefficient.
+
+        Returns:
+           Report class instance.
+
+        """
         if all(["train" in self.train_type, "valid" in self.train_type]):
             actual, pred = self.act_pred_dict["valid"]["actual"], convert_prob_to_label(self.act_pred_dict["valid"]["pred"])
             output_valid = matthews_corrcoef(actual, pred)
@@ -281,7 +366,16 @@ class Report:
             self.writer.add_scalars("MCC", scalar_tag, self.counter)
         return self
 
-    def plot_pred_prob(self, at_which_epoch):
+    def plot_pred_prob(self, at_which_epoch: int):
+        """Plots scatter plot for the predicted probabilites for each class.
+
+        Args:
+            at_which_epoch: After how many epochs the predicted probabilites should be plotted. For example if the model is trained for 10 epochs and you want to plot this after every 5 epoch then the input to this method will be 5.
+
+        Returns:
+           Report class instance.
+
+        """
         if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
             actual, pred = self.act_pred_dict["valid"]["actual"], self.act_pred_dict["valid"]["pred"]
             for index, value in enumerate(self.classes):
@@ -292,7 +386,19 @@ class Report:
                 self.writer.add_figure(f"Prediction Probability/{value}/valid", f, self.counter)
         return self
 
-    def plot_model_data_grad(self, at_which_iter):
+    def plot_model_data_grad(self, at_which_iter: int):
+        """Plot Histogram and Distribution for each layers of model Weights, Bias and Gradients.
+
+        Args:
+            at_which_iter: After how many iteration this should be plotted. The ideal way to plot this to plot after every one-half or one-third of the train_iterator.
+
+        Returns:
+            Report class instance.
+
+        Examples::
+            >>> report.plot_model_data_grad(at_which_iter = len(train_iterator)/2)
+
+        """
         if self.iter_count["train"] % at_which_iter == 0:
             count = self.iter_count["train"] // at_which_iter
             pattern = re.compile(".weight|.bias")
@@ -310,7 +416,16 @@ class Report:
                     self.writer.add_histogram(tag_string + "/grad", value.grad.clone().detach().cpu().numpy(), count)
         return self
 
-    def plot_hparams(self, config):
+    def plot_hparams(self, config: HyperParameters):
+        """Plot Hyper parameters for the model. This method should be called once training is over.
+
+        Args:
+            config: Hyperparameter Configs.
+
+        Returns:
+            Report class instance.
+
+        """
         d = config.get_dict_repr()
         hparam_dict = HyperParameters.flatten(d)
         metric_dict = {"Loss": self.loss_count["valid"]}
