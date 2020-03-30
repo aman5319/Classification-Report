@@ -88,11 +88,11 @@ class Config(object):
     def __str__(self,):
         return str(self.get_dict_repr())
 
-    def save_config_json(self, path):
+    def save_config_json(self, path: str):
         """Save the Configuration in json format.
 
         Args:
-            path: (str) The file path to save json file.
+            path: The file path to save json file.
 
         Examples::
             >>> training_config = Config(lr=0.1, batch_size=32, device="GPU")
@@ -105,11 +105,11 @@ class Config(object):
             print("Configuration Saved")
 
     @classmethod
-    def load_config_json(cls, path):
-        """ Loading the saved configuration.
+    def load_config_json(cls, path: str):
+        """Loading the saved configuration.
 
         Args:
-            path: (str) The file from json config will be loaded.
+            path: The file from json config will be loaded.
 
         Returns:
             Config: A Config Class is returned with attributes set from json file
@@ -175,13 +175,13 @@ class HyperParameters(Config):
         self.update(**configs)
 
     @staticmethod
-    def flatten(d, parent_key="", sep="_"):
+    def flatten(d: dict, parent_key: str = "", sep: str = "_"):
         """ Flatten the nested dictionary using recusrion.
 
         Args:
-            d: (dict) The dictionary to flatten.
-            parent_key: (str) The parent key.
-            sep: (str) The sep to be used to join parent_key with nested_key
+            d: The dictionary to flatten.
+            parent_key: The parent key.
+            sep: The sep to be used to join parent_key with nested_key
 
         Returns:
             dict: Flattened dictionary.
