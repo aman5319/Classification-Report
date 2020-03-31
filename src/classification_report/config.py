@@ -166,7 +166,7 @@ class HyperParameters(Config):
         >>> model_config = Config(**{'hid_dim': 512,'n_layers': 8,'n_heads': 8,'pf_dim': 2048,'dropout': 0.1})
         >>> training_config = Config(num_epochs=15, max_lr=0.09, batch_size=64)
         >>> inference_config = Config(batch_size=16)
-        >>> hyper = HyperParameters(model_confif = model_config, training_config=training_config,infer_config=inference_config)
+        >>> hyper = HyperParameters(model_config = model_config, training_config=training_config,infer_config=inference_config)
         >>> hyper.model_config.hid_dim
         512
         >>> hyper.save_config_json("hyper.json")

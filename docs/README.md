@@ -30,6 +30,12 @@ The third necessary package is the `recommonmark` package to accept Markdown as 
 pip install recommonmark
 ```
 
+The fourth package is `sphinx-autoapi` for generating API Reference on Read the docs. 
+
+```bash
+pip install sphinx-autoapi
+```
+
 ## Building the documentation
 
 Once you have setup `sphinx`, you can build the documentation by running the following command in the `/docs` folder:
