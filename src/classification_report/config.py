@@ -5,13 +5,13 @@ __all__ = ["Config", "HyperParameters"]
 
 
 class Config(object):
-    """ This class can be used to create and store data for an type of configuration.
+    """This class can be used to create and store data for an type of configuration.
 
     Args:
         **kwargs: Arbitrary keyword arguments.
 
     Examples::
-        >>> from utils import Config
+        >>> from classification_report import Config
         >>> training_config = Config(lr=0.1, batch_size=32, device="GPU")
         >>> model_config = Config(number_layers=3, num_head=32)
         >>> model_config.number_layers
@@ -40,6 +40,7 @@ class Config(object):
             **kwargs: Arbitrary keyword arguments.
 
         Examples::
+            >>> from classification_report import Config
             >>> training_config = Config(lr=0.1, batch_size=32, device="GPU")
             >>> training_config.lr
             0.1
@@ -51,7 +52,7 @@ class Config(object):
             setattr(self, attr, value)
 
     def append_values(self, **kwargs):
-        """This is method can be used to append values to an existing attribute.
+        """This method can be used to append values to an existing attribute.
 
         For Example if using Lr Scheduler then this can be use to track all lr values by appending in a list.
 
@@ -62,6 +63,7 @@ class Config(object):
             **kwargs: Arbitrary keyword arguments.
 
         Examples::
+            >>> from classification_report import Config
             >>> training_config = Config(lr=0.1, batch_size=32, device="GPU")
             >>> training_config.lr
             0.1
@@ -95,6 +97,7 @@ class Config(object):
             path: The file path to save json file.
 
         Examples::
+            >>> from classification_report import Config
             >>> training_config = Config(lr=0.1, batch_size=32, device="GPU")
             >>> training_config.save_config_json("training_config.json")
             Configuration Saved
@@ -115,6 +118,7 @@ class Config(object):
             Config: A Config Class is returned with attributes set from json file
 
         Examples::
+            >>> from classification_report import Config
             >>> training_config = Config.load_config_json("training_config.json") # Execute the saving code first.
             >>> training_config.lr
             0.1
@@ -135,6 +139,7 @@ class Config(object):
             dict: The Dictionary representation of Config class
 
         Example::
+            >>> from classification_report import Config
             >>> training_config = Config(lr=0.1, batch_size=32, device="GPU")
             >>> training_config.get_dict_repr()
             {"lr":0.1,"batch_size":32,"device":"GPU"}
@@ -157,6 +162,7 @@ class HyperParameters(Config):
         AssertionError: Pass only Config class object.
 
     Examples::
+        >>> from classification_report import Config, HyperParameters
         >>> model_config = Config(**{'hid_dim': 512,'n_layers': 8,'n_heads': 8,'pf_dim': 2048,'dropout': 0.1})
         >>> training_config = Config(num_epochs=15, max_lr=0.09, batch_size=64)
         >>> inference_config = Config(batch_size=16)

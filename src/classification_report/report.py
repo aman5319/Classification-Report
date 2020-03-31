@@ -18,23 +18,9 @@ __all__ = ["Report"]
 
 
 class Report:
-    """Generating Report for classification Model by tracking Model training and  giving different types of metrics to evaluate the Model.
+    """Generating Report for classification model by tracking Model training and giving different types of metrics to evaluate the Model.
 
-    For any classification Problem during Model's training it is very important to track Model's Weight Biases and Gradients. After training the important part is the model evaluation where we evaluate the model performance. This Report class simplify the evaluation part where all the evaluation metrics are automatically generated for the model.
-    It uses Tensorboard to keep a track of all these.
-
-    Features
-        1. Model Weights, Biases and Gradients Tracking using Histogram.
-        2. Generating GUI graph  of the entire Model.
-        3. Graph of Precision, Recall and F1 Score for all the classes for each epoch.
-        4. Graph of Macro Avg and Weighted Avg of Precision, Recall and F1-score for eacg epoch.
-        5. Training and Validation Loss tracking for each epoch.
-        6. Accuracy and MCC metric tracking at each epoch.
-        7. Generating Confusion Matrix after certain number of epoch.
-        8. Bar Graph for False Positive and False Negative count for each class.
-        9. Scatter Plot for the predicited probabilities.
-        10. Hyparameter Tracking.
-
+    For any classification problem during Model's training it is very important to track Model's Weight Biases and Gradients. After training the important part is the model evaluation where we evaluate the model performance. This Report class simplify the evaluation part where all the evaluation metrics are automatically generated for the model.It uses Tensorboard to visualize all these.
     """
 
     def __init__(self, classes: TrainType, dir_name: str = None):
@@ -72,7 +58,7 @@ class Report:
             train:  True signifies training mode and False Validation Mode.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         if self.clean_flag:
@@ -118,7 +104,7 @@ class Report:
             train_type: The Labels belong to `train` or `valid`.
 
         Returns:
-           Report class instance.
+           :class:`Report` class instance.
 
         """
         self.loss_count.update({train_type: self.change_data_type(loss, "f") * batch_size})
@@ -132,7 +118,7 @@ class Report:
             train_type: The Labels belong to `train` or `valid`.
 
         Returns:
-           Report class instance.
+           :class:`Report` class instance.
 
         """
 
@@ -147,7 +133,7 @@ class Report:
             detail: whether to use detail mode or not.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         self.clean_flag = True
@@ -184,7 +170,10 @@ class Report:
         return data
 
     def close(self):
-        """Close the tensorboard writer object."""
+        """Close the tensorboard writer object.
+
+        After calling this method report will not track anything.
+        """
         self.writer.close()
 
     def write_to_tensorboard(self):
@@ -200,7 +189,7 @@ class Report:
         """Plots loss at the end of the epoch.
 
         Returns:
-           Report class instance.
+           :class:`Report` class instance.
 
         """
         loss_main_tag = "Loss"
@@ -216,7 +205,7 @@ class Report:
             data: The input to the model.
 
         Returns:
-           Report class instance.
+           :class:`Report` class instance.
 
         """
         self.model = model
@@ -230,7 +219,7 @@ class Report:
             at_which_epoch: After how many epochs the confusion matrix should be plotted. For example if the model is trained for 10 epochs and you want to plot confusion matrix after every 5 epoch then the input to this method will be 5.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         if self.counter % at_which_epoch == 0:
@@ -275,7 +264,7 @@ class Report:
         """Plots Precision Recall F1-score graph for all Classes with Weighted Average and Macro Average.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         if all(["train" in self.train_type, "valid" in self.train_type]):
@@ -310,7 +299,7 @@ class Report:
 
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
@@ -357,7 +346,7 @@ class Report:
             pred: The predicted Labels.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         true_sum = np.bincount(actual, minlength=len(self.classes))
@@ -371,7 +360,7 @@ class Report:
         """Plots Mathews Correlation Coefficient.
 
         Returns:
-           Report class instance.
+           :class:`Report` class instance.
 
         """
         if all(["train" in self.train_type, "valid" in self.train_type]):
@@ -397,7 +386,7 @@ class Report:
             at_which_epoch: After how many epochs the predicted probabilites should be plotted. For example if the model is trained for 10 epochs and you want to plot this after every 5 epoch then the input to this method will be 5.
 
         Returns:
-           Report class instance.
+           :class:`Report` class instance.
 
         """
         if self.counter % at_which_epoch == 0 and "valid" in self.train_type:
@@ -417,7 +406,7 @@ class Report:
             at_which_iter: After how many iteration this should be plotted. The ideal way to plot this to plot after every one-half or one-third of the train_iterator.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         Examples::
             >>> report.plot_model_data_grad(at_which_iter = len(train_iterator)/2)
@@ -447,7 +436,7 @@ class Report:
             config: Hyperparameter Configs.
 
         Returns:
-            Report class instance.
+            :class:`Report` class instance.
 
         """
         d = config.get_dict_repr()
