@@ -11,28 +11,17 @@ Classification Report is a high-level library built on top of Pytorch which util
 ## Features
 
 1. Model Weights, Biases and Gradients Tracking and plotting on histogram.
-
 2. Visualizing the distribution of above described Model parameters.
-
 3. Generating an interactive graph of the entire Model.
-
 4. Graph of Precision, Recall and F1 Score for all the classes for each epoch.
-
 5. Graph of Macro Avg and Weighted Avg of Precision, Recall and F1-score for each epoch.
-
 6. Training and Validation Loss tracking for each epoch.
-
 7. Accuracy and MCC metric tracking at each epoch.
-
 8. Generating Confusion Matrix after certain number of epochs.
-
 9. Bar Graph for False Positive and False Negative count for each class.
-
 10. Scatter Plot for the predicited probabilities.
-
-11. Hyparameter Tracking for comparing experiments.
-
-12. ### [For More Detail](https://classification-report.readthedocs.io/en/latest/detailed.html)
+11. HyperParameter Tracking for comparing experiments.
+### [For More Detail look in Features](https://classification-report.readthedocs.io/en/latest/detailed.html)
 
 
 
@@ -42,6 +31,13 @@ Classification Report is a high-level library built on top of Pytorch which util
 pip install classification-report
 ```
 
-## Say Thanks
+## Demo
+[Check the Demo](https://classification-report.readthedocs.io/en/latest/examples.html#demo)
+
+## Usage
+[Understand The Usage](https://classification-report.readthedocs.io/en/latest/examples.html)
+
+
+## Say Thanks, By connecting me over Linkedin.
 
 [![saythanks](https://img.shields.io/badge/say-thanks-ff69b4.svg)](https://www.linkedin.com/in/aman5319/)

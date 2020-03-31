@@ -18,7 +18,7 @@ Features
     8. Generating Confusion Matrix after certain number of epochs.
     9. Bar Graph for False Positive and False Negative count for each class.
     10. Scatter Plot for the predicited probabilities.
-    11. Hyparameter Tracking for comparing experiments.
+    11. HyperParameter Tracking for comparing experiments.
 
 Detailed Features
 =================
