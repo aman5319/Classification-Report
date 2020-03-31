@@ -58,6 +58,7 @@ user_deb = ["torch", "numpy", "seaborn", "matplotlib", "sklearn", "tensorboard"]
 dev_deb = {"dev": ["sphinx",  # documentation
                    "sphinx_rtd_theme",  # read the docs theme
                    "recommonmark",  # markdown support for sphinx
+                   "sphinx-autoapi",  # static website generation
                    "black",  # Code Formatting
                    "flake8",  # linting
                    "isort",  # formatting sort

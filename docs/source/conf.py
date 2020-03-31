@@ -13,15 +13,13 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../src'))
-
 # -- Project information -----------------------------------------------------
 
 project = 'Classification Report'
 copyright = '2020, Aman Pandey'
 author = 'Aman Pandey'
-
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = "1.0.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -30,13 +28,14 @@ release = '1.0.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
     'sphinx.ext.napoleon',
     'recommonmark',
     'sphinx.ext.viewcode',
+    'autoapi.extension'
 ]
-
+autoapi_type = 'python'
+autoapi_dirs = ['../../src']
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
