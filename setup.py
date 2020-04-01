@@ -100,7 +100,7 @@ setup(
                  "Programming Language :: Python :: 3.7",
                  "Topic :: Scientific/Engineering :: Artificial Intelligence"],
     project_urls={
-        "Documentation": "https://classification-report.readthedocs.io/en/latest/"
+        "Documentation": "https://classification-report.readthedocs.io/en/latest/",
         "Source": "https://github.com/aman5319/Classification-Report",
         "Bug Trackers": "https://github.com/aman5319/Classification-Report/issues"
     },

@@ -28,5 +28,5 @@ style:
 # clean
 clean: clean-build clean-pycache quality
 
-build: style
+build:
 	python setup.py sdist

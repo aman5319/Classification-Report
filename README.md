@@ -41,8 +41,10 @@ Classification Report is a high-level library built on top of Pytorch which util
 pip install classification-report
 ```
 
-## Demo
-[Check the Demo](https://classification-report.readthedocs.io/en/latest/examples.html#demo)
+## [Demo](https://classification-report.readthedocs.io/en/latest/examples.html#demo)
+### Goole Colab (Recommended)
+
+​	Just open this notebook on colab and view the entire tensorboard visualization. - [Simple Mnist Simple Reporting Visualize on colab](https://github.com/aman5319/Classification-Report/blob/master/demo_notebooks/MNIST_Example_Visualize_in_Colab.ipynb)
 
 ## Usage
 [Understand The Usage](https://classification-report.readthedocs.io/en/latest/examples.html)

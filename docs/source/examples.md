@@ -2,6 +2,8 @@
 
 # Examples
 
+
+
 ## Creating Config
 
 There are multiple scenarios where we need to create configuration like in context of deep learning 
@@ -101,12 +103,17 @@ tensorboard --logdir=runs
 
 ![](../../assets/tensorboard_visualize.png)
 
+
+
 ## Demo
 
-To just view the generated tensorboard visualization.
+### Goole Colab (Recommended)
 
-[Install the library](installation.md)
+​	Just open this notebook on colab and view the entire tensorboard visualization. - [Simple Mnist Simple Reporting Visualize on colab](https://github.com/aman5319/Classification-Report/blob/master/demo_notebooks/MNIST_Example_Visualize_in_Colab.ipynb)
 
+### Manually Visualize a pre-existing experiment on your local.
+
+   [Install the library](installation.md) After installing the library execute these commands.
 ```shell
 git clone https://github.com/aman5319/Classification-Report # clone library 
 cd Classification-Report/demo_notebook # change the directory
