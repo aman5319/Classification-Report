@@ -109,7 +109,7 @@ To just view the generated tensorboard visualization.
 
 ```shell
 git clone https://github.com/aman5319/Classification-Report # clone library 
-cd Classification-Report/demo_notebook # change the directoty
-tensorboard --logdir=runs # execute tensorboar.
+cd Classification-Report/demo_notebook # change the directory
+tensorboard --logdir=runs # execute tensorboard
 ```
 
